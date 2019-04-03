@@ -12,8 +12,10 @@ import (
 	"time"
 )
 
-const VIEW_WIDTH = 200
-const VIEW_HEIGHT = 200
+const VIEW_WIDTH = 500
+const VIEW_HEIGHT = 500
+const ROW_COUNT = 50
+const COL_COUNT = 50
 
 type Cell struct {
 	row, column        int
@@ -51,9 +53,10 @@ func NewBoard(width, height int) *Board {
 
 
 func newGameView() *GameView {
+
 	gv := &GameView{
 		isVisible: true,
-		board:     *NewBoard(30, 30),
+		board:     *NewBoard(ROW_COUNT, COL_COUNT),
 	}
 	return gv
 }
@@ -212,7 +215,7 @@ func drawRect(img *image.RGBA, x int, y int, w int, h int, color color.Color) {
 
 func (g *GameView) animate() {
 	go func() {
-		tick := time.NewTicker(time.Second / 6)
+		tick := time.NewTicker(time.Second / 30)
 
 		for {
 			select {
