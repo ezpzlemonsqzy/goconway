@@ -12,6 +12,9 @@ import (
 	"time"
 )
 
+const VIEW_WIDTH = 200
+const VIEW_HEIGHT = 200
+
 type Cell struct {
 	row, column        int
 	alive, willBeAlive bool
@@ -53,29 +56,6 @@ func newGameView() *GameView {
 		board:     *NewBoard(30, 30),
 	}
 	return gv
-}
-
-
-func Print(m *Board) {
-	msg := "\n";
-	for colIndex := 0; colIndex < m.width; colIndex++ {
-		msg += "--"
-	}
-	for rowIndex := 0; rowIndex < m.height; rowIndex++ {
-		msg += "\n"
-		for colIndex := 0; colIndex < m.width; colIndex++ {
-			cell := m.rows[rowIndex].cells[colIndex];
-			//msg += "|"
-			if (cell.alive) {
-				msg += "{}"
-				//msg += "\u2588\u2588"
-			} else {
-				msg += "  "
-			}
-		}
-		msg += "|"
-	}
-	fmt.Println("\x0c", msg)
 }
 
 func (c *Cell) Cycle(m Board) {
@@ -162,17 +142,16 @@ type GameView struct {
 	deadColor  color.Color
 	layoutSize fyne.Size
 	position   fyne.Position
-	isVisible  bool
 	//
 	board Board
 	//$$
+	isVisible  bool
 	render   *canvas.Raster
 	objects  []fyne.CanvasObject
 	imgCache *image.RGBA
 }
 
 func (g *GameView) Layout(size fyne.Size) {
-	fmt.Println("layout", size.Width, size.Height)
 	g.render.Resize(size)
 }
 
@@ -214,9 +193,9 @@ func (g *GameView) draw(w, h int) image.Image {
 			y := rowIndex * cellHeight
 
 			if (g.board.rows[rowIndex].cells[colIndex].alive) {
-				drawRect(img, x, y, cellWidth, cellHeight, color.White)
+				drawRect(img, x, y, cellWidth, cellHeight, g.aliveColor)
 			} else {
-				drawRect(img, x, y, cellWidth, cellHeight, color.Black)
+				drawRect(img, x, y, cellWidth, cellHeight, g.deadColor)
 			}
 		}
 	}
@@ -242,7 +221,6 @@ func (g *GameView) animate() {
 				//	continue
 				//}
 
-				//Print(*m)
 				g.board.Step()
 				widget.Refresh(g)
 			}
@@ -266,7 +244,7 @@ func (g *GameView) Hide() {
 }
 
 func (g *GameView) MinSize() fyne.Size {
-	return fyne.NewSize(200, 200)
+	return fyne.NewSize(VIEW_WIDTH, VIEW_HEIGHT)
 }
 
 func (g *GameView) Move(pos fyne.Position) {
@@ -279,7 +257,6 @@ func (g *GameView) Position() fyne.Position {
 }
 
 func (g *GameView) Resize(size fyne.Size) {
-	fmt.Println("resize", size.Width, size.Height)
 	g.layoutSize = size
 	widget.Renderer(g).Layout(size)
 }
@@ -310,7 +287,7 @@ func main() {
 
 	app := app.New()
 	gv := newGameView()
-	window := app.NewWindow("go gol")
+	window := app.NewWindow("go GOL")
 	window.SetContent(gv)
 	window.Canvas().SetOnTypedRune(gv.typedRune)
 	gv.animate()
