@@ -18,16 +18,16 @@ type Cell struct {
 }
 
 type Row struct {
-	cells []Cell;
+	cells []Cell
 }
 
-type Map struct {
+type Board struct {
 	rows          []Row
 	width, height int
 }
 
-func NewMap(width, height int) *Map {
-	m := Map{
+func NewBoard(width, height int) *Board {
+	m := Board{
 		rows:   make([]Row, height),
 		width:  width,
 		height: height,
@@ -43,11 +43,21 @@ func NewMap(width, height int) *Map {
 			m.rows[rowIndex].cells[colIndex].willBeAlive = false
 		}
 	}
-
 	return &m
 }
 
-func Print(m Map) {
+
+func newGameView() *GameView {
+	gv := GameView{
+		name: "blah",
+		isVisible: true,
+		board:     *NewBoard(30, 30),
+	}
+	return &gv
+}
+
+
+func Print(m Board) {
 	msg := "\n";
 	for colIndex := 0; colIndex < m.width; colIndex++ {
 		msg += "--"
@@ -69,7 +79,7 @@ func Print(m Map) {
 	fmt.Println("\x0c", msg)
 }
 
-func (c *Cell) Cycle(m Map) {
+func (c *Cell) Cycle(m Board) {
 	numberLiveNeighbors := c.CountLiveNeighbors(m)
 	if (c.alive) {
 		if (numberLiveNeighbors > 3 || numberLiveNeighbors < 2) {
@@ -84,7 +94,7 @@ func (c *Cell) Commit() {
 	c.alive = c.willBeAlive
 }
 
-func (m *Map) Step() {
+func (m *Board) Step() {
 	for rowIndex := 0; rowIndex < m.height; rowIndex++ {
 		for colIndex := 0; colIndex < m.width; colIndex++ {
 			m.rows[rowIndex].cells[colIndex].Cycle(*m)
@@ -97,7 +107,7 @@ func (m *Map) Step() {
 	}
 }
 
-func (c *Cell) CountLiveNeighbors(m Map) int {
+func (c *Cell) CountLiveNeighbors(m Board) int {
 	count := 0
 	sameRow := c.row
 	upRow := c.row - 1
@@ -155,11 +165,12 @@ type GameView struct {
 	position   fyne.Position
 	isVisible  bool
 	//
-	gameMap Map
+	board Board
 	//$$
 	render   *canvas.Raster
 	objects  []fyne.CanvasObject
 	imgCache *image.RGBA
+	name     string
 }
 
 func (g *GameView) Layout(size fyne.Size) {
@@ -195,16 +206,26 @@ func (g *GameView) draw(w, h int) image.Image {
 		g.imgCache = img
 	}
 	//
-	for rowIndex := 0; rowIndex < h; rowIndex++ {
-		for colIndex := 0; colIndex < w; colIndex++ {
-			if (g.gameMap.rows[rowIndex].cells[colIndex].alive) {
-				img.Set(colIndex, rowIndex, g.aliveColor)
+	fmt.Println(g.name, g.board.width, g.board.height)
+	for rowIndex := 0; rowIndex < g.board.height; rowIndex++ {
+		for colIndex := 0; colIndex < g.board.width; colIndex++ {
+			if (g.board.rows[rowIndex].cells[colIndex].alive) {
+				drawRect(img, colIndex, rowIndex, 10, 10, color.White)
 			} else {
-				img.Set(colIndex, rowIndex, g.deadColor)
+				drawRect(img, colIndex, rowIndex, 10, 10, color.Black)
 			}
 		}
 	}
 	return img
+}
+
+func drawRect(img *image.RGBA, x int, y int, w int, h int, color color.Color) {
+	fmt.Println(x,y,w,h,color)
+	for X := x; X < x+w; X++ {
+		for Y := y; Y < y+h; Y++ {
+			img.Set(X, Y, color)
+		}
+	}
 }
 
 func (g *GameView) animate() {
@@ -219,7 +240,7 @@ func (g *GameView) animate() {
 				//}
 
 				//Print(*m)
-				g.gameMap.Step()
+				g.board.Step()
 				widget.Refresh(g)
 			}
 		}
@@ -235,14 +256,6 @@ func (g *GameView) CreateRenderer() fyne.WidgetRenderer {
 	renderer.ApplyTheme()
 
 	return renderer
-}
-
-func newGameView() *GameView {
-	gv := &GameView{
-		isVisible: true,
-		gameMap:*NewMap(30, 30),
-	}
-	return gv
 }
 
 func (g *GameView) Hide() {
@@ -290,7 +303,6 @@ func (g *GameView) typedRune(r rune) {
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	fmt.Println("start", rand.Float32())
-
 	//
 
 	app := app.New()
@@ -298,23 +310,8 @@ func main() {
 	window := app.NewWindow("go gol")
 	window.SetContent(gv)
 	window.Canvas().SetOnTypedRune(gv.typedRune)
-	//go func() {
-	//	for x :=0; x < 1000; x++ {
-	//		m := NewMap(40, 40)
-	//		Print(*m)
-	//		time.Sleep(time.Second * 2)
-	//		for i :=0; i < 500; i++ {
-	//			time.Sleep(time.Second/30)
-	//			Print(*m)
-	//			m.Step()
-	//		}
-	//	}
-	//}()
-	fmt.Println("!!!")
 	gv.animate()
 
-
 	window.ShowAndRun()
-
 
 }
