@@ -49,7 +49,6 @@ func NewBoard(width, height int) *Board {
 
 func newGameView() *GameView {
 	gv := &GameView{
-		name: "blah",
 		isVisible: true,
 		board:     *NewBoard(30, 30),
 	}
@@ -170,7 +169,6 @@ type GameView struct {
 	render   *canvas.Raster
 	objects  []fyne.CanvasObject
 	imgCache *image.RGBA
-	name     string
 }
 
 func (g *GameView) Layout(size fyne.Size) {
@@ -206,13 +204,19 @@ func (g *GameView) draw(w, h int) image.Image {
 		g.imgCache = img
 	}
 	//
-	fmt.Println(g.name, g.board.width, g.board.height)
+
+	cellWidth := w / g.board.width
+	cellHeight := h / g.board.height
+
 	for rowIndex := 0; rowIndex < g.board.height; rowIndex++ {
 		for colIndex := 0; colIndex < g.board.width; colIndex++ {
+			x := colIndex * cellWidth
+			y := rowIndex * cellHeight
+
 			if (g.board.rows[rowIndex].cells[colIndex].alive) {
-				drawRect(img, colIndex, rowIndex, 10, 10, color.White)
+				drawRect(img, x, y, cellWidth, cellHeight, color.White)
 			} else {
-				drawRect(img, colIndex, rowIndex, 10, 10, color.Black)
+				drawRect(img, x, y, cellWidth, cellHeight, color.Black)
 			}
 		}
 	}
@@ -220,7 +224,6 @@ func (g *GameView) draw(w, h int) image.Image {
 }
 
 func drawRect(img *image.RGBA, x int, y int, w int, h int, color color.Color) {
-	fmt.Println(x,y,w,h,color)
 	for X := x; X < x+w; X++ {
 		for Y := y; Y < y+h; Y++ {
 			img.Set(X, Y, color)
