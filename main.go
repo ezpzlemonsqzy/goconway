@@ -48,16 +48,16 @@ func NewBoard(width, height int) *Board {
 
 
 func newGameView() *GameView {
-	gv := GameView{
+	gv := &GameView{
 		name: "blah",
 		isVisible: true,
 		board:     *NewBoard(30, 30),
 	}
-	return &gv
+	return gv
 }
 
 
-func Print(m Board) {
+func Print(m *Board) {
 	msg := "\n";
 	for colIndex := 0; colIndex < m.width; colIndex++ {
 		msg += "--"
@@ -248,7 +248,7 @@ func (g *GameView) animate() {
 }
 
 func (g *GameView) CreateRenderer() fyne.WidgetRenderer {
-	renderer := &GameView{}
+	renderer := g
 
 	render := canvas.NewRaster(renderer.draw)
 	renderer.render = render
