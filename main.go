@@ -12,10 +12,11 @@ import (
 	"time"
 )
 
-const VIEW_WIDTH = 500
-const VIEW_HEIGHT = 500
-const ROW_COUNT = 50
-const COL_COUNT = 50
+const TICKS_PER_SECOND = 10
+const VIEW_WIDTH = 600
+const VIEW_HEIGHT = 600
+const ROW_COUNT = 100
+const COL_COUNT = 100
 
 type Cell struct {
 	row, column        int
@@ -57,6 +58,7 @@ func newGameView() *GameView {
 	gv := &GameView{
 		isVisible: true,
 		board:     *NewBoard(ROW_COUNT, COL_COUNT),
+		position: fyne.NewPos(0, 0),
 	}
 	return gv
 }
@@ -163,7 +165,7 @@ func (g *GameView) Refresh() {
 }
 
 func (g *GameView) ApplyTheme() {
-	g.aliveColor = color.White
+	g.aliveColor = color.RGBA{R:255, G: 100, B: 100, A:255}
 	g.deadColor = color.Black
 }
 
@@ -215,7 +217,7 @@ func drawRect(img *image.RGBA, x int, y int, w int, h int, color color.Color) {
 
 func (g *GameView) animate() {
 	go func() {
-		tick := time.NewTicker(time.Second / 30)
+		tick := time.NewTicker(time.Second / TICKS_PER_SECOND)
 
 		for {
 			select {
